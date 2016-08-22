@@ -12,11 +12,11 @@ cli
   .delimiter(cli.chalk['yellow']('ftd~$'))
 
 cli
-  .mode('connect <username>')
+  .mode('connect <username> [server] = "localhost"') //AJ added [server] to give the optional command to load a server
   .delimiter(cli.chalk['green']('connected>'))
   .init(function (args, callback) {
     username = args.username
-    server = connect({ host: 'localhost', port: 8080 }, () => {
+    server = connect({ host: args.server, port: 8080 }, () => {  //aj replaced localhost with args.server to connect to server of choosing
       server.write(new Message({ username, command: 'connect' }).toJSON() + '\n')
       callback()
     })
@@ -35,11 +35,24 @@ cli
 
     if (command === 'disconnect') {
       server.end(new Message({ username, command }).toJSON() + '\n')
+
     } else if (command === 'echo') {
       server.write(new Message({ username, command, contents }).toJSON() + '\n')
+
+    } else if (command === 'broadcast') { //added by AJ
+      server.write(new Message({ username, command, contents }).toJSON() + '\n') //added by AJ
+
+    } else if (command === '@user') { //added by AJ
+      server.write(new Message({ username, command, contents }).toJSON() + '\n') //added by AJ
+
+    } else if (command === 'users') { //added by AJ
+      server.write(new Message({ username, command, contents }).toJSON() + '\n') //added by AJ
+
     } else {
       this.log(`Command <${command}> was not recognized`)
     }
+
+
 
     callback()
   })
