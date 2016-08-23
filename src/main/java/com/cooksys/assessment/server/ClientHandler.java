@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.xml.crypto.Data;
 
@@ -22,16 +23,17 @@ public class ClientHandler implements Runnable {
 	private Socket socket;
 	private BufferedReader in; //added by AJ
 	private PrintWriter out; //added by AJ
-	static ArrayList<UserTracker> userList = new ArrayList<>(); //added by AJ
+	static HashMap<String, UserTracker> userList = new HashMap<>(); //added by AJ - created a HashMap to pull all the user names and their sockets from the UserTracker Class I created
+	static HashMap<String, BufferedReader> readers = new HashMap<>();
+	static HashMap<String, PrintWriter> writers = new HashMap<>();
 
+	
 	//Constructs a handler thread, squirreling away the socket. //added by AJ
 	public ClientHandler(Socket socket) {
 		super();
 		this.socket = socket;
 		
 		
-			
-			
 			
 	}
 
@@ -43,6 +45,7 @@ public class ClientHandler implements Runnable {
 			//create character streams for the socket
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+//			PrintWriter broadcastedWriter = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
 
 			while (!socket.isClosed()) {
 				String raw = reader.readLine();
@@ -52,25 +55,61 @@ public class ClientHandler implements Runnable {
 				
 					case "connect":
 						log.info("user <{}> connected", message.getUsername());
-						ClientHandler.userList.add(new UserTracker(message.getUsername(), this.socket));  //added by AJ
+						ClientHandler.userList.put(message.getUsername(), new UserTracker(message.getUsername(), this.socket));  //added by AJ
+						ClientHandler.readers.put(message.getUsername(), reader);  //added by AJ
+						ClientHandler.writers.put(message.getUsername(), writer);  //added by AJ
 						break;
+						
 					case "disconnect":
 						log.info("user <{}> disconnected", message.getUsername());
+						ClientHandler.readers.remove(message.getUsername());
+						ClientHandler.writers.remove(message.getUsername());
+						ClientHandler.userList.remove(message.getUsername());
 						this.socket.close();
 						break;
+						
 					case "echo":
 						log.info("user <{}> echoed message <{}>", message.getUsername(), message.getContents());
 						String response = mapper.writeValueAsString(message);
 						writer.write(response);
 						writer.flush();
 						break;
+						
 					case "broadcast": //added by AJ
 						log.info("user <{}> broadcasted message <{}>", message.getUsername(), message.getContents());  //added by AJ
-						String broadcastResponse = mapper.writeValueAsString(message);  //added by AJ
-						writer.write(broadcastResponse);  //added by AJ
-						writer.flush();  //added by AJ
-						break;  //added by AJ
+						for(UserTracker userTracker: userList.values()) { //used a for loop to pull all the values from the userList HashMap
+							String broadcastResponse = mapper.writeValueAsString(message);  //added by AJ
+							writers.get(userTracker.getUsername()).write(broadcastResponse);  //added by AJ
+							writers.get(userTracker.getUsername()).flush();  //added by AJ.getSocket().getOutputStream().write(mapper.writeValueAsString(message));
+							
+						}
+//						break;
 						
+						case "users": //added by AJ
+						log.info("user <{}> connected users <{}>", message.getUsername(), message.getContents());  //added by AJ
+						for(UserTracker userTracker: userList.values()) { //used a for loop to pull all the values from the userList HashMap
+							info += "\n" + userTracker.getUsername();
+							
+							String connectedUsers = mapper.writeValueAsString(message);  //added by AJ
+							writers.get(userTracker.getUsername()).write(connectedUsers);  //added by AJ
+							writers.get(userTracker.getUsername()).flush();  //added by AJ.getSocket().getOutputStream().write(mapper.writeValueAsString(message));
+							break;
+						}
+						
+//					case "@user": //added by AJ
+//						log.info("user <{}> broadcasted message <{}>", message.getUsername(), message.getContents());  //added by AJ
+//						for(UserTracker userTracker: userList.values()) { //used a for loop to pull all the values from the userList HashMap
+//							String broadcastResponse = mapper.writeValueAsString(message);  //added by AJ
+//							writers.get(userTracker.getUsername()).write(broadcastResponse);  //added by AJ
+//							writers.get(userTracker.getUsername()).flush();  //added by AJ.getSocket().getOutputStream().write(mapper.writeValueAsString(message));
+//							break;
+//						}
+//						
+
+				
+//						break;  //added by AJ
+					default:
+				
 					
 				}
 			}

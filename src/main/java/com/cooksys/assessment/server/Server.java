@@ -34,7 +34,7 @@ public class Server implements Runnable {
      * The set of all the print writers for all the clients.  This
      * set is kept so we can easily broadcast messages.
      */
-    private static HashSet<PrintWriter> writers = new HashSet<PrintWriter>(); //added by AJ
+//    private static HashSet<PrintWriter> writers = new HashSet<PrintWriter>(); //added by AJ
 	
 
 //	Thread accept = new Thread() { //added by AJ
