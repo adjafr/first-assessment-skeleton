@@ -7,7 +7,8 @@ export const cli = vorpal()
 
 let username
 let server
-let mostRecentCommand
+let mostRecentCommand = ''
+// let commandText = ''
 
 cli
   .delimiter(cli.chalk['yellow']('ftd~$'))
@@ -34,8 +35,8 @@ cli
 
 
   .action(function (input, callback) {
-    const [ command, ...rest ] = words(input)
-    const contents = rest.join(' ')
+    let [ command, ...rest ] = words(input, /[^\s ]+/g)  //added lodash expression from https://regex101.com/#javascript so all characters but white spaces work
+    let contents = '`<' + username + '> ' + '(' + command + ')' + ' ' + rest.join(' ') + '`'  //aj edited for printout
 
     if (command === 'disconnect') {
       server.end(new Message({ username, command }).toJSON() + '\n')
@@ -43,22 +44,38 @@ cli
     } else if (command === 'echo') {
       server.write(new Message({ username, command, contents }).toJSON() + '\n')
       mostRecentCommand = command
+      // commandText = mostRecentCommand
 
     } else if (command === 'broadcast') { //added by AJ
+      contents = '`<' + username + '> ' + '(all) ' + '' + rest.join(' ') + '`'
       server.write(new Message({ username, command, contents }).toJSON() + '\n') //added by AJ
       mostRecentCommand = command
 
-    } else if (command === '@user') { //added by AJ
+      // commandText = "all"
+
+    } else if (command.charAt(0) ===  '@') { //added by AJ
       server.write(new Message({ username, command, contents }).toJSON() + '\n') //added by AJ
-      mostRecentCommand = command
+      // commandText = command
 
     } else if (command === 'users') { //added by AJ
       server.write(new Message({ username, command, contents }).toJSON() + '\n') //added by AJ
-      mostRecentCommand = command
+      // commandText = command
 
-    // } else if (command === '') {
-    //   command = mostRecentCommand
-    //   server.write(new Message({ username, command, contents }).toJSON() + '\n') //added by AJ
+    } else if (command !== 'connect' && command !== 'disconnect' && command !== 'echo' && command !== 'broadcast'
+         && command.charAt(0) !==  '@' && command !== 'users' && mostRecentCommand === 'broadcast') {
+      command = mostRecentCommand
+      contents = '`<' + username + '> ' + '(all) ' + contents + '`'   //+ ' ' + '' + rest.join(' ') +
+     //  commandText = command
+    //  contents = mostRecentCommand + ' ' + contents
+      server.write(new Message({ username, command, contents }).toJSON() + '\n') //added by AJ
+
+     } else if (command !== 'connect' && command !== 'disconnect' && command !== 'echo' && command !== 'broadcast'
+          && command.charAt(0) !==  '@' && command !== 'users' && mostRecentCommand !== '') {
+       command = mostRecentCommand
+       contents = '`<' + username + '> ' + command + ' ' + contents // + rest.join(' ') + '`'
+      //  commandText = command
+      //  contents = mostRecentCommand + ' ' + contents
+       server.write(new Message({ username, command, contents }).toJSON() + '\n') //added by AJ
 
 
     } else {
