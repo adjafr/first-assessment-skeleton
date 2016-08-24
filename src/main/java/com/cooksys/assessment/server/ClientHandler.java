@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.crypto.Data;
 
@@ -28,7 +29,6 @@ public class ClientHandler implements Runnable {
 	static HashMap<String, UserTracker> userList = new HashMap<>(); //added by AJ - created a HashMap to pull all the user names and their sockets from the UserTracker Class I created
 	static HashMap<String, BufferedReader> readers = new HashMap<>();
 	static HashMap<String, PrintWriter> writers = new HashMap<>();
-	String connectedUsers = "";
 	String timeStamp = new SimpleDateFormat("EEE yyyy MMM dd hh:mm:ss a z").format(new Date());  //String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
 	
 	//Constructs a handler thread, squirreling away the socket. //added by AJ
@@ -60,10 +60,15 @@ public class ClientHandler implements Runnable {
 					case "connect":
 						
 						log.info("user <{}> connected", message.getUsername());
+						message.setContents(timeStamp + message.getUsername() + "connected");
+						String connectionResponse = mapper.writeValueAsString(message);  //added by AJ
+						for(UserTracker userTracker: userList.values()) {
+							writers.get(userTracker.getUsername()).write(connectionResponse);  //added by AJ
+							writers.get(userTracker.getUsername()).flush();  //added by AJ.getSocket().getOutputStream().write(mapper.writeValueAsString(message));	
+						}
 						ClientHandler.userList.put(message.getUsername(), new UserTracker(message.getUsername(), this.socket));  //added by AJ
 						ClientHandler.readers.put(message.getUsername(), reader);  //added by AJ
 						ClientHandler.writers.put(message.getUsername(), writer);  //added by AJ
-						
 						
 						break;
 						
@@ -73,6 +78,12 @@ public class ClientHandler implements Runnable {
 						ClientHandler.writers.remove(message.getUsername());
 						ClientHandler.userList.remove(message.getUsername());
 						this.socket.close();
+						message.setContents(timeStamp + message.getUsername() + " disconnected");
+						String disconnectionMessage = mapper.writeValueAsString(message);  //added by AJ
+						for(UserTracker userTracker: userList.values()) {
+							writers.get(userTracker.getUsername()).write(disconnectionMessage);  //added by AJ
+							writers.get(userTracker.getUsername()).flush();  //added by AJ.getSocket().getOutputStream().write(mapper.writeValueAsString(message));	
+						}
 						break;
 						
 					case "echo":
@@ -96,54 +107,22 @@ public class ClientHandler implements Runnable {
 			
 						
 					case "users": //added by AJ
+						StringBuilder connectedUsers = new StringBuilder();
 						log.info("user <{}> broadcasted message <{}>", message.getUsername(), message.getContents());  //added by AJ
-						message.setContents(timeStamp + message.getContents());
+						connectedUsers.append("\n").append(timeStamp);
 						for(UserTracker userTracker: userList.values()) { //used a for loop to pull all the values from the userList HashMap
-							connectedUsers += "\n" + userTracker.getUsername(); //userTracker.getUsername();
-							String broadcastResponse = mapper.writeValueAsString(message);  //added by AJ
-							writers.get(userTracker.getUsername()).write(connectedUsers);  //added by AJ
-							writers.get(userTracker.getUsername()).flush();  //added by AJ.getSocket().getOutputStream().write(mapper.writeValueAsString(message));	
+							connectedUsers.append("\n").append(userTracker.getUsername()); //userTracker.getUsername();
 						}
+						message.setContents(timeStamp + connectedUsers.toString());
+						String usersResponse = mapper.writeValueAsString(message);  //added by AJ
+						writer.write(usersResponse);  //added by AJ
+						writer.flush();  //added by AJ.getSocket().getOutputStream().write(mapper.writeValueAsString(message));	
 						break;
 						
 						
-//						case "users": //added by AJ
-//						//log.info("user <{}> connected users <{}>", message.getUsername(), message.getContents());  //added by AJ
-//						for(UserTracker userTracker: userList.values()) { //used a for loop to pull all the values from the userList HashMap
-////							log.info("this loop has executed");
-//							connectedUsers += "\n" + userTracker.getUsername();
-//						}	
-//						PrintWriter userWriters = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
-//						message.setContents(timeStamp + message.getContents());
-//							String messageWriter = mapper.writeValueAsString(message);  //added by AJ
-//							userWriters.write(messageWriter);  //added by AJ
-//							userWriters.flush();  //added by AJ.getSocket().getOutputStream().write(mapper.writeValueAsString(message));		
-//							break;
 							
-						case "@user": //added by AJ
-							log.info("user <{}> direct message <{}>", message.getUsername(), message.getContents());  //added by AJ
-							for(UserTracker userTracker: userList.values()) { //used a for loop to pull all the values from the userList HashMap
-								message.setContents(timeStamp + message.getContents());
-								String broadcastResponse = mapper.writeValueAsString(message);  //added by AJ
-								writers.get(userTracker.getUsername()).write(broadcastResponse);  //added by AJ
-								writers.get(userTracker.getUsername()).flush();  //added by AJ.getSocket().getOutputStream().write(mapper.writeValueAsString(message));
-								
-							}
-							break;
-						
-						
-//					case "@user": //added by AJ
-//						log.info("user <{}> broadcasted message <{}>", message.getUsername(), message.getContents());  //added by AJ
-//						for(UserTracker userTracker: userList.values()) { //used a for loop to pull all the values from the userList HashMap
-//							String broadcastResponse = mapper.writeValueAsString(message);  //added by AJ
-//							writers.get(userTracker.getUsername()).write(broadcastResponse);  //added by AJ
-//							writers.get(userTracker.getUsername()).flush();  //added by AJ.getSocket().getOutputStream().write(mapper.writeValueAsString(message));
-//							break;
-//						}
-//						
 
-				
-//						break;  //added by AJ
+						
 					default:
 				
 					

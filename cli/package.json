@@ -23,6 +23,7 @@
     "webpack": "^1.13.2"
   },
   "dependencies": {
+    "chalk": "^1.1.3",
     "lodash": "^4.15.0",
     "vorpal": "^1.11.4"
   }
