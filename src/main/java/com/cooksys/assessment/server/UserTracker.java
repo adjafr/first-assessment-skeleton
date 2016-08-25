@@ -8,7 +8,11 @@ import javax.xml.crypto.Data;
 
 
 
-
+/**
+ * 
+ * @author Adam
+ * Created a new class to track the username and sockets of each user that connected to my server
+ */
 public class UserTracker
 {
 

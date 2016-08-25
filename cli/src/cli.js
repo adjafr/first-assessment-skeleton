@@ -44,38 +44,43 @@ cli
 
 
     } else if (command === 'echo') {
-      contents = cli.chalk['magenta']('<' + username + '> ' + '(' + command + ') '  + rest.join(' '))
+      contents = cli.chalk['magenta'](rest.join(' ')) //'<' + username + '> ' + '(' + command + ') '  +
       server.write(new Message({ username, command, contents }).toJSON() + '\n')
       mostRecentCommand = command
 
 
-    } else if (command === 'broadcast') { //added by AJ
-      contents = cli.chalk['blue']('<' + username + '> ' + '(all) ' + '' + rest.join(' '))
-      server.write(new Message({ username, command, contents }).toJSON() + '\n') //added by AJ
+    } else if (command === 'broadcast') {
+      contents = cli.chalk['blue'](rest.join(' '))  //'<' + username + '> ' + '(all) ' + '' +
+      server.write(new Message({ username, command, contents }).toJSON() + '\n')
       mostRecentCommand = command
 
 
-    } else if (command.charAt(0) ===  '@') { //added by AJ
-      let targetUser = command;
-      command = '@user'
-      contents = cli.chalk['red']('<' + username + '> ' + '(whisper) ' + '' + rest.join(' '))
-      server.write(new Message({ username, command, contents, targetUser }).toJSON() + '\n') //added by AJ
+    } else if (command.charAt(0) === '@') {
 
+      contents = cli.chalk['red'](rest.join(' ')) //'<' + username + '> ' + '(whisper) ' + '' +
+      server.write(new Message({ username, command, contents }).toJSON() + '\n')
+      mostRecentCommand = command
 
-    } else if (command === 'users') { //added by AJ
-      server.write(new Message({ username, command, contents }).toJSON() + '\n') //added by AJ
+    } else if (command === 'users') {
+      server.write(new Message({ username, command, contents }).toJSON() + '\n')
 
 
     } else if (command !== 'connect' && command !== 'disconnect' && command !== 'echo' && command !== 'broadcast'
          && command.charAt(0) !==  '@' && command !== 'users' && mostRecentCommand === 'broadcast') {
-          contents = cli.chalk['blue']('<' + username + '> ' + '(all)' + ' ' + command + ' '  + rest.join(' '))  //aj edited for printout
-      server.write(new Message({ username, command: mostRecentCommand, contents: contents }).toJSON() + '\n') //added by AJ
+          contents = cli.chalk['blue'](command + ' '  + rest.join(' '))  // '<' + username + '> ' + '(all)' + ' ' +
+      server.write(new Message({ username, command: mostRecentCommand, contents: contents }).toJSON() + '\n')
 
 
      } else if (command !== 'connect' && command !== 'disconnect' && command !== 'echo' && command !== 'broadcast'
           && command.charAt(0) !==  '@' && command !== 'users' && mostRecentCommand === 'echo') {
-            contents = cli.chalk['magenta']('<' + username + '> ' + '(' + mostRecentCommand + ')' + ' ' + command + ' '  + rest.join(' '))  //aj edited for printout
-       server.write(new Message({ username, command: mostRecentCommand, contents: contents }).toJSON() + '\n') //added by AJ
+            contents = cli.chalk['magenta'](command + ' '  + rest.join(' '))  // '<' + username + '> ' + '(' + mostRecentCommand + ')' + ' ' +
+       server.write(new Message({ username, command: mostRecentCommand, contents: contents }).toJSON() + '\n')
+
+
+     } else if (command !== 'connect' && command !== 'disconnect' && command !== 'echo' && command !== 'broadcast'
+          && command.charAt(0) !==  '@' && command !== 'users' && mostRecentCommand.charAt(0) === '@') {
+            contents = cli.chalk['red'](command + ' '  + rest.join(' '))  // '<' + username + '> ' + '(' + mostRecentCommand + ')' + ' ' +
+       server.write(new Message({ username, command: mostRecentCommand, contents: contents }).toJSON() + '\n')
 
 
     } else {

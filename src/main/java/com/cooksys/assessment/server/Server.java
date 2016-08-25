@@ -17,12 +17,11 @@ public class Server implements Runnable {
 	
 	private int port;
 	private ExecutorService executor;
-	//private ServerSocket serverSocket; //added by AJ
+
 	
 	public Server(int port, ExecutorService executor) {
 		super();
 		this.port = port;
-		//serverSocket = new ServerSocket(port); //added by AJ
 		this.executor = executor;
 	}
 	
@@ -34,14 +33,11 @@ public class Server implements Runnable {
      * The set of all the print writers for all the clients.  This
      * set is kept so we can easily broadcast messages.
      */
-//    private static HashSet<PrintWriter> writers = new HashSet<PrintWriter>(); //added by AJ
-	
 
-//	Thread accept = new Thread() { //added by AJ
+
 	public void run() {
 		log.info("server started");
-//		Server server = new Server(); //added by AJ
-//		Thread serverThread = new Thread(server); //added by AJ
+
 		ServerSocket ss;
 		try {
 			ss = new ServerSocket(this.port);
