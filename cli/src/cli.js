@@ -14,7 +14,7 @@ cli
   .delimiter(cli.chalk['yellow']('ftd~$'))
 
 cli
-  .mode('connect <username> [server] = "localhost"') //AJ added [server] to give the optional command to load a server
+  .mode('connect <username> [server] = "localhost"') //
   .delimiter(cli.chalk['green']('connected>'))  //https://github.com/chalk/chalk
   .init(function (args, callback) {
     username = args.username
@@ -31,6 +31,7 @@ cli
     server.on('end', () => {
       cli.exec('exit')
     })
+
   })
 
 
@@ -41,6 +42,10 @@ cli
 
     if (command === 'disconnect') {
       server.end(new Message({ username, command }).toJSON() + '\n')
+
+
+    } else if (command === 'exit') {
+        server.end(new Message({ username, command }).toJSON() + '\n')
 
 
     } else if (command === 'echo') {
@@ -62,8 +67,8 @@ cli
       mostRecentCommand = command
 
     } else if (command === 'users') {
+      cli.chalk['blue'](username)
       server.write(new Message({ username, command, contents }).toJSON() + '\n')
-
 
     } else if (command !== 'connect' && command !== 'disconnect' && command !== 'echo' && command !== 'broadcast'
          && command.charAt(0) !==  '@' && command !== 'users' && mostRecentCommand === 'broadcast') {
