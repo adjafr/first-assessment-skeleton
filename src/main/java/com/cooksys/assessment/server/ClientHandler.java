@@ -59,8 +59,8 @@ public class ClientHandler implements Runnable {
 					log.info("user <{}> direct message <{}>", message.getUsername(), message.getContents()); //
 					
 					String userToSend = message.getCommand().substring(1);
-					for (UserTracker userTracker : userList.values())
-					{ // used a for loop to pull all the values from the
+//					for (UserTracker userTracker : userList.values())
+//					{ // used a for loop to pull all the values from the
 						// userList HashMap
 								
 						if (message.getContents().length() > 143) {
@@ -77,7 +77,7 @@ public class ClientHandler implements Runnable {
 					writers.get(userToSend).write(directResponse); //write it to the output stream
 					writers.get(userToSend).flush(); // clean up of the output stream.
 						}
-					}
+//					}
 					
 				} else 
 				{
@@ -180,7 +180,7 @@ public class ClientHandler implements Runnable {
 						ipCount--;// increase the count of user connected from same ip address
 						ipUserCount.put(socket.getInetAddress(), ipCount); // set the updated count
 						
-						message.setContents(timeStamp + socket.getInetAddress().toString().substring(1) + "<" + message.getUsername() + ">" + " has disconnected");
+						message.setContents(timeStamp + socket.getInetAddress().toString().substring(1) + " <" + message.getUsername() + ">" + " has disconnected");
 						
 						/*
 						 * notify all the users in the user map to alert them the disconnection message and decrease the ipCount
@@ -199,18 +199,18 @@ public class ClientHandler implements Runnable {
 						
 					case "echo":
 						log.info("user <{}> echoed message <{}>", message.getUsername(), message.getContents());
-						log.info(message.getContents().substring(5, 9));
+//						log.info(message.getContents().substring(5, 9));
 						
 						/*
 						 * kick out users by name function
 						 */
 						
-						if (message.getContents().substring(5, 9).equals("kick")) {
+						if (message.getContents().contains("kick")) {
 							String temp = "";
 							
 							for (UserTracker userTracker : userList.values()) {
-								
-								if (message.getContents().substring(5, 9).equals("kick") && message.getContents().contains(userTracker.getUsername())) {
+
+								if (message.getContents().contains("kick") && message.getContents().contains(userTracker.getUsername())) {
 									temp = userTracker.getUsername();
 									
 									ipCount = ipUserCount.get(socket.getInetAddress());

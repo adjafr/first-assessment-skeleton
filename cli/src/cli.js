@@ -7,16 +7,18 @@ export const cli = vorpal()
 
 let username
 let server
-let mostRecentCommand = ''
+let mostRecentCommand = 'nothing'
 // let commandText = ''
 
 cli
   .delimiter(cli.chalk['yellow']('ftd~$'))
 
 cli
-  .mode('connect <username> [server] = "localhost"') //
+  .mode('connect <username> [server] = "localhost"') // https://github.com/dthree/vorpal - mode is where we are until we press exit
   .delimiter(cli.chalk['green']('connected>'))  //https://github.com/chalk/chalk
   .init(function (args, callback) {
+
+
     username = args.username
     server = connect({ host: args.server, port: 8080 }, () => {  //aj re
       // placed localhost with args.server to connect to server of choosing
@@ -70,22 +72,23 @@ cli
       cli.chalk['blue'](username)
       server.write(new Message({ username, command, contents }).toJSON() + '\n')
 
-    } else if (command !== 'connect' && command !== 'disconnect' && command !== 'echo' && command !== 'broadcast'
+    } else if (command !== connect && command !== 'disconnect' && command !== 'echo' && command !== 'broadcast'
          && command.charAt(0) !==  '@' && command !== 'users' && mostRecentCommand === 'broadcast') {
           contents = cli.chalk['blue'](command + ' '  + rest.join(' '))  // '<' + username + '> ' + '(all)' + ' ' +
       server.write(new Message({ username, command: mostRecentCommand, contents: contents }).toJSON() + '\n')
 
 
-     } else if (command !== 'connect' && command !== 'disconnect' && command !== 'echo' && command !== 'broadcast'
+     } else if (command !== connect && command !== 'disconnect' && command !== 'echo' && command !== 'broadcast'
           && command.charAt(0) !==  '@' && command !== 'users' && mostRecentCommand === 'echo') {
             contents = cli.chalk['magenta'](command + ' '  + rest.join(' '))  // '<' + username + '> ' + '(' + mostRecentCommand + ')' + ' ' +
        server.write(new Message({ username, command: mostRecentCommand, contents: contents }).toJSON() + '\n')
 
 
-     } else if (command !== 'connect' && command !== 'disconnect' && command !== 'echo' && command !== 'broadcast'
+     } else if (command !== connect && command !== 'disconnect' && command !== 'echo' && command !== 'broadcast'
           && command.charAt(0) !==  '@' && command !== 'users' && mostRecentCommand.charAt(0) === '@') {
             contents = cli.chalk['red'](command + ' '  + rest.join(' '))  // '<' + username + '> ' + '(' + mostRecentCommand + ')' + ' ' +
        server.write(new Message({ username, command: mostRecentCommand, contents: contents }).toJSON() + '\n')
+
 
 
     } else {
